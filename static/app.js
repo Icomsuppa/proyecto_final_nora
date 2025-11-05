@@ -16,8 +16,11 @@ connectBtn.onclick = () => {
     if (es) {
         append('Ya estás conectado al stream.');
         return;
+    }else{
+        append('Conectando al stream SSE...');
+        es = new EventSource('/chat/stream');
+        append('Ya estas Conectado')
     }
-    append('Conectando al stream SSE...');
     es = new EventSource('/chat/stream');
     es.onmessage = function (e) {
         append(e.data);

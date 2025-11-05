@@ -1,32 +1,35 @@
 <!-- flask_microservice/templates/index.html -->
 <!doctype html>
-<html>
+<html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Chat Multicast + Time (Flask microservice)</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    #messages { width: 100%; height: 300px; border: 1px solid #ccc; overflow-y: scroll; padding: 8px; white-space: pre-wrap; background:#fafafa }
-    #input { width: calc(100% - 90px); }
-    #controls { margin-top: 10px; display:flex; gap:8px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Multicast</title>
+  <link rel="stylesheet" href="../static/app.css">
 </head>
 <body>
-  <h2>Chat Multicast (LAN)</h2>
+  <div class="container">
+    <h2>Chat Multicast (LAN)</h2>
 
-  <div>
-    <label>Nombre: <input id="username" placeholder="Tu nombre" /></label>
-    <button id="btnConnect">Conectar</button>
+    <div class="chat-wrapper">
+      <div class="connection-section">
+        <label>
+          <span>Nombre:</span>
+          <input id="username" placeholder="Tu nombre" />
+        </label>
+        <button id="btnConnect">Conectar</button>
+      </div>
+
+      <div id="messages" aria-live="polite"></div>
+
+      <div id="controls">
+        <input id="input" placeholder="Escribe un mensaje..." />
+        <button id="send">Enviar</button>
+        <button id="getTime">Pedir hora (y comparar)</button>
+      </div>
+    </div>
   </div>
 
-  <div id="messages" aria-live="polite"></div>
-
-  <div id="controls">
-    <input id="input" placeholder="Escribe un mensaje..." />
-    <button id="send">Enviar</button>
-    <button id="getTime">Pedir hora (y comparar)</button>
-  </div>
-
-  <script src="/static/app.js"></script>
+  <script src="../static/app.js"></script>
 </body>
 </html>
