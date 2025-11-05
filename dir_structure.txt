@@ -1,0 +1,15 @@
+flask_microservice/
+├── app.py
+├── requirements.txt
+├── config.py
+├── blueprints/
+│   ├── __init__.py
+│   ├── time_bp.py
+│   └── chat_bp.py
+├── static/
+│   └── app.js
+├── templates/
+│   └── index.html
+├── clients/
+│   └── console_client.py
+└── README.md

@@ -1,0 +1,154 @@
+========================================================
+ INSTRUCCIONES DE USO - MICROSERVICIO FLASK (CHAT + HORA)
+========================================================
+
+📁 ESTRUCTURA RECOMENDADA DEL PROYECTO
+--------------------------------------
+
+flask_microservice/
+├── app.py
+├── config.py
+├── requirements.txt
+├── blueprints/
+│   ├── time_bp.py
+│   └── chat_bp.py
+├── static/
+│   └── app.js
+├── templates/
+│   └── index.html
+├── clients/
+│   └── console_client.py
+└── instrucciones.txt
+
+
+⚙️ INSTALACIÓN Y CONFIGURACIÓN
+-------------------------------
+
+1. Crear entorno virtual (venv o pipenv):
+   python -m venv venv
+   pipenv install
+   
+
+2. Activar entorno:
+   - En Windows: venv\Scripts\activate
+   - En Linux/Mac: source venv/bin/activate
+
+3. Instalar dependencias (si tienes pipenv, solo haz pipenv shell):
+   pip install -r requirements.txt
+
+
+🚀 EJECUCIÓN DEL SERVIDOR
+--------------------------
+
+Para iniciar el servidor Flask:
+
+   python app.py
+
+El servidor se ejecutará en:
+   http://0.0.0.0:5000/
+
+Esto significa que estará disponible para cualquier equipo
+de la misma red local (LAN).
+
+
+🌐 CONEXIÓN DESDE OTROS EQUIPOS EN LA RED
+------------------------------------------
+
+1. Obtén la dirección IP local del servidor (donde ejecutaste Flask).
+   Ejemplo:
+       192.168.1.5
+
+2. Desde cualquier otro equipo en la misma red, abre en el navegador:
+       http://192.168.1.5:5000/
+
+3. En la interfaz web:
+   - Escribe tu nombre en el campo superior.
+   - Pulsa **Conectar** para enlazarte al chat.
+   - Escribe tus mensajes y presiona **Enviar**.
+   - Puedes pulsar **Pedir hora (y comparar)** para recibir
+     la hora del servidor y ver la diferencia con tu hora local.
+
+4. Todos los usuarios conectados en la LAN verán los mensajes compartidos.
+
+
+💬 FUNCIONAMIENTO DEL CHAT MULTICAST
+-------------------------------------
+
+- El servidor envía y recibe mensajes en el grupo multicast:
+     Dirección: 224.1.1.1
+     Puerto:    5007
+     TTL:       1  (solo red local)
+
+- Cada mensaje se reinyecta al sistema para que todos los
+  clientes web conectados via SSE (Server-Sent Events)
+  los reciban en tiempo real.
+
+- Si varios servidores Flask están corriendo con esta
+  configuración en la misma red, todos recibirán y reenviarán
+  mensajes entre sí automáticamente.
+
+
+💻 CLIENTE DE CONSOLA (OPCIONAL)
+---------------------------------
+
+También puedes usar el cliente de consola para solicitar la hora:
+
+   python clients/console_client.py
+
+Por defecto se conecta a:
+   http://127.0.0.1:5000/time/
+
+Si lo ejecutas desde otra máquina, cambia la línea en el script:
+
+   URL = "http://<IP_DEL_SERVIDOR>:5000/time/"
+
+Ejemplo:
+   URL = "http://192.168.1.5:5000/time/"
+
+
+📡 NOTAS TÉCNICAS Y CONSIDERACIONES
+------------------------------------
+
+• Multicast en LAN:
+  La dirección 224.1.1.1:5007 y TTL=1 limitan la comunicación
+  a la red local. Asegúrate de que tu router/switch permita
+  multicast dentro de la misma subred.
+
+• SSE (Server-Sent Events):
+  Los navegadores se reconectan automáticamente si la conexión
+  se interrumpe. El servidor mantiene una cola de mensajes
+  (message_queue) y reenvía los nuevos en tiempo real.
+
+• Seguridad y CORS:
+  CORS está habilitado globalmente para facilitar pruebas LAN.
+  En entornos de producción se recomienda limitar los orígenes.
+
+• Escalado:
+  Esta solución funciona bien en redes pequeñas.
+  Para redes grandes o clústeres, usa un broker (Redis)
+  o migra a WebSockets centralizados.
+
+• Timeout:
+  El cliente web y el cliente de consola usan un tiempo máximo
+  de espera de 5 segundos (5000 ms) al solicitar la hora.
+
+
+✅ RESUMEN RÁPIDO
+------------------
+
+Servidor:
+   python app.py
+
+Cliente (desde navegador):
+   http://<IP_DEL_SERVIDOR>:5000/
+
+Cliente consola:
+   python clients/console_client.py
+
+
+Todos los equipos en la misma red local podrán:
+   - Enviar y recibir mensajes de chat en tiempo real.
+   - Consultar y comparar la hora del servidor.
+   - Intercambiar mensajes a través de multicast LAN.
+
+========================================================
