@@ -1,4 +1,3 @@
-<!-- flask_microservice/templates/index.html -->
 <!doctype html>
 <html lang="es">
 <head>
@@ -20,16 +19,25 @@
         <button id="btnConnect">Conectar</button>
       </div>
 
-      <div id="messages" aria-live="polite"></div>
+      <!-- (MODIFICADO) Este es el div que el nuevo app.js espera -->
+      <div id="messages" class="messages-area" aria-live="polite"></div>
 
       <div id="controls">
         <input id="input" placeholder="Escribe un mensaje..." />
         <button id="send">Enviar</button>
+        
+        <!-- (AGREGADO) Botón 'oculto' que se activa con el label -->
+        <input type="file" id="imageInput" accept="image/png, image/jpeg" style="display: none;"/>
+        <!-- (AGREGADO) Este es el botón que el usuario ve -->
+        <button id="sendImageBtn">Subir Foto</button>
+        
         <button id="getTime">Pedir hora (y comparar)</button>
       </div>
     </div>
   </div>
 
+  <!-- (AGREGADO) Cargamos el nuevo script ANTES de app.js -->
+  <script src="../static/image_resizer.js"></script>
   <script src="../static/app.js"></script>
 </body>
 </html>

@@ -1,35 +1,43 @@
 // --- Variables Globales ---
 
 // La conexión al stream de Server-Sent Events (SSE).
-// Se inicializa en null para saber que no estamos conectados.
 let es = null;
 
 // --- Selección de Elementos del DOM ---
 
-// El <textarea> donde se muestran todos los mensajes del chat.
+// (MODIFICADO) El <div> donde se muestran todos los mensajes del chat.
 const messages = document.getElementById('messages');
-// El <input> donde el usuario escribe su mensaje.
-const input = document.getElementById('input');
-// El botón para enviar un mensaje.
+// ... (el resto de tus variables DOM están bien) ...
 const sendBtn = document.getElementById('send');
-// El botón para conectarse al stream de chat.
 const connectBtn = document.getElementById('btnConnect');
-// El <input> donde el usuario pone su nombre.
 const usernameInput = document.getElementById('username');
-// El botón para obtener la hora del servidor.
 const getTimeBtn = document.getElementById('getTime');
+
+// --- (AGREGADO) Nuevos elementos para imágenes ---
+// (Estos IDs deben existir en tu index.html)
+const imageInput = document.getElementById('imageInput');
+const sendImageBtn = document.getElementById('sendImageBtn');
+
 
 // --- Funciones Auxiliares ---
 
 /**
- * Agrega un mensaje de texto al <textarea> 'messages'
+ * (MODIFICADO)
+ * Agrega un nodo (texto o HTML) al área de mensajes
  * y se asegura de que la vista se desplace hacia abajo.
- * @param {string} msg - El mensaje a mostrar.
+ * @param {string|Node} content - El mensaje de texto o un elemento (ej. <img>).
  */
-function append(msg) {
-    // Agrega el mensaje y un salto de línea.
-    messages.textContent += msg + '\n';
-    // Mueve el scroll del textarea hasta el final.
+function append(content) {
+    if (typeof content === 'string') {
+        // Si es texto, crea un párrafo para él
+        const p = document.createElement('p');
+        p.textContent = content;
+        messages.appendChild(p);
+    } else {
+        // Si es un nodo (como una imagen), lo agrega directamente
+        messages.appendChild(content);
+    }
+    // Mueve el scroll del div hasta el final
     messages.scrollTop = messages.scrollHeight;
 }
 
@@ -37,28 +45,72 @@ function append(msg) {
 
 /**
  * Manejador del clic para el botón 'Conectar'.
- * Establece la conexión SSE con el servidor.
  */
 connectBtn.onclick = () => {
-    // Primero, revisa si ya existe una conexión activa.
     if (es) {
         append('Ya estás conectado al stream.');
-        return; // No hace nada más si ya está conectado.
+        return;
     }
 
-    // Si no hay conexión, crea una nueva.
     append('Conectando al stream SSE...');
-    // Crea la instancia de EventSource apuntando a la ruta del servidor.
     es = new EventSource('/chat/stream');
     append('Ya estas Conectado');
 
     /**
-     * Se activa cada vez que el servidor envía un mensaje
-     * a través del stream.
+     * (MODIFICADO)
+     * Se activa cada vez que el servidor envía un mensaje.
+     * Ahora debe parsear JSON y decidir qué hacer.
      */
     es.onmessage = function (e) {
-        // 'e.data' contiene el texto del mensaje enviado por el servidor.
-        append(e.data);
+        let data;
+        try {
+            // e.data ahora es un string JSON enviado por el servidor
+            data = JSON.parse(e.data);
+        } catch (err) {
+            // Si falla, es un mensaje de texto simple (como el ": connected")
+            append(e.data);
+            return;
+        }
+
+        const name = data.user || 'Anon';
+
+        // Decidir qué tipo de mensaje es
+        if (data.type === 'chat') {
+            // --- Mensaje de chat normal ---
+            const text = data.text || '';
+            append(`[${name}]: ${text}`);
+
+        } else if (data.type === 'image') {
+            // --- (AGREGADO) ¡Mensaje de imagen! ---
+            const filename = data.filename;
+            const sender_ip = data.sender_ip; // La IP que el listener de Python agregó
+
+            if (!filename || !sender_ip) {
+                append(`[${name}] intentó enviar una imagen, pero hubo un error.`);
+                return;
+            }
+
+            // --- (¡¡¡AQUÍ ESTÁ EL ARREGLO!!!) ---
+            // Construimos la URL completa... ¡AGREGANDO EL PREFIJO '/chat'!
+            const imageUrl = `http://${sender_ip}:5000/chat/temp_images/${filename}`;
+
+            append(`[${name}] envió una imagen:`);
+            
+            // Crea el elemento de imagen
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = `Imagen de ${name}`;
+            img.className = 'chat-image'; // Para CSS
+            img.style.maxWidth = '400px';
+            img.style.maxHeight = '400px';
+            img.style.borderRadius = '8px';
+            img.style.marginTop = '4px';
+            img.style.marginBottom = '4px';
+            
+            img.onload = () => messages.scrollTop = messages.scrollHeight;
+            
+            append(img); // Agrega la imagen al chat
+        }
     };
 
     /**
@@ -66,43 +118,41 @@ connectBtn.onclick = () => {
      */
     es.onerror = function (e) {
         append('Error SSE, reintentando...');
-        // El navegador intentará reconectar automáticamente por defecto.
     };
 };
 
 /**
+ * (MODIFICADO)
  * Manejador del clic para el botón 'Enviar'.
- * Envía el mensaje del usuario al servidor usando fetch (POST).
+ * Envía un payload JSON compatible con la nueva lógica (tipo "chat").
  */
 sendBtn.onclick = async () => {
-    // Obtiene el nombre de usuario, o usa 'Anon' si está vacío.
     const name = usernameInput.value.trim() || 'Anon';
-    // Obtiene el texto del mensaje.
     const text = input.value.trim();
 
-    // No envía nada si el campo de texto está vacío.
     if (!text) return;
 
-    // Prepara el objeto (payload) que se enviará al servidor.
-    const payload = { message: `[${new Date().toLocaleTimeString()}] ${name}: ${text}` };
+    // (MODIFICADO) ¡AQUÍ ESTÁ EL CAMBIO!
+    // Este es el payload que tu Python SÍ entiende.
+    const payload = { 
+        type: "chat", // Especificamos el tipo
+        user: name,
+        message: text // 'message' en lugar de 'text' para coincidir con el python
+    };
 
     try {
-        // Realiza la solicitud POST al servidor.
-        const r = await fetch('/chat/send', {
+        const r = await fetch('/chat/send', { // /send ahora espera este JSON
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload) // Convierte el objeto a JSON.
+            body: JSON.stringify(payload)
         });
 
-        // Comprueba si el servidor respondió correctamente (ej. 200 OK).
         if (!r.ok) {
             append('Error al enviar mensaje al servidor.');
         } else {
-            // Si se envió bien, limpia el campo de texto.
             input.value = '';
         }
     } catch (e) {
-        // Captura errores de red (ej. servidor caído).
         append('Error de red al enviar mensaje.');
     }
 };
@@ -113,70 +163,99 @@ sendBtn.onclick = async () => {
  */
 input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-        sendBtn.click(); // Simula un clic en el botón 'Enviar'.
+        sendBtn.click();
     }
 });
 
 /**
  * Manejador del clic para el botón 'Obtener Hora'.
- * Pide la hora al servidor y la compara con la hora local.
- * Incluye un timeout de 5 segundos.
  */
 getTimeBtn.onclick = async () => {
-    // AbortController se usa para cancelar el fetch si tarda mucho.
     const controller = new AbortController();
-    // Configura un temporizador de 5 segundos (5000 ms).
     const id = setTimeout(() => controller.abort(), 5000);
 
     try {
-        // Inicia el fetch, pasando el 'signal' del AbortController.
         const resp = await fetch('/time/', { signal: controller.signal });
-        
-        // Si el fetch tuvo éxito, cancela el temporizador de timeout.
         clearTimeout(id);
 
-        // Comprueba si la respuesta del servidor fue exitosa.
         if (!resp.ok) {
             append('Error al pedir hora al servidor');
             return;
         }
 
-        // Parsea la respuesta JSON del servidor.
         const data = await resp.json();
-        const serverTimeStr = data.time; // Formato esperado "HH:MM:SS"
-        
-        // Convierte "HH:MM:SS" a un array de números [HH, MM, SS].
+        const serverTimeStr = data.time;
         const serverParts = serverTimeStr.split(':').map(x => parseInt(x, 10));
-        
-        // Obtiene la fecha y hora local actual.
         const nowLocal = new Date();
-        
-        // Crea un objeto Date para la hora del servidor, pero usando
-        // el AÑO, MES y DÍA de la máquina local. Esto es para
-        // comparar solo las horas, minutos y segundos.
         const serverNow = new Date(nowLocal.getFullYear(), nowLocal.getMonth(), nowLocal.getDate(),
             serverParts[0], serverParts[1], serverParts[2]);
 
-        // Calcula la diferencia en milisegundos.
         const diffMs = nowLocal - serverNow;
-        // Convierte la diferencia a segundos y la redondea.
         const diffSec = Math.round(diffMs / 1000);
 
-        // Muestra los resultados en el chat.
         append(`Hora servidor: ${data.date} ${data.time}`);
         append(`Hora local: ${nowLocal.toLocaleString()}`);
         
-        if (diffSec > 0) {
-            append(`La hora local está ${diffSec} segundos ADELANTADA.`);
-        } else if (diffSec < 0) {
-            append(`La hora local está ${-diffSec} segundos ATRASADA.`);
+        if (diffSec > 0) append(`La hora local está ${diffSec} segundos ADELANTADA.`);
+        else if (diffSec < 0) append(`La hora local está ${-diffSec} segundos ATRASADA.`);
+        else append('Las horas coinciden exactamente.');
+
+    } catch (err) {
+        append('Timeout (5000 ms) o error al obtener hora.');
+    }
+};
+
+
+// --- (AGREGADO) NUEVA LÓGICA PARA SUBIR IMÁGENES ---
+
+/**
+ * (AGREGADO)
+ * Conecta el botón visible "Subir Foto" al input[type=file] invisible.
+ */
+sendImageBtn.onclick = () => {
+    imageInput.click(); // Abre el explorador de archivos
+};
+
+/**
+ * (AGREGADO)
+ * Se activa cuando el usuario selecciona un archivo de imagen.
+ */
+imageInput.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const name = usernameInput.value.trim() || 'Anon';
+    append('Redimensionando imagen...');
+
+    try {
+        // Usa la función del script 'image_resizer.js'
+        const imageBase64 = await resizeImage(file, 800, 800, 0.7);
+
+        append('Subiendo imagen...');
+        
+        const payload = {
+            user: name,
+            image_b64: imageBase64
+        };
+
+        // Llama a la nueva ruta del backend
+        const r = await fetch('/chat/upload_image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!r.ok) {
+            append('Error al subir la imagen.');
         } else {
-            append('Las horas coinciden exactamente.');
+            append('Imagen enviada.');
         }
 
     } catch (err) {
-        // Este bloque se activa si hay un error de red o
-        // si el AbortController canceló el fetch (timeout).
-        append('Timeout (5000 ms) o error al obtener hora.');
+        append('Error al procesar la imagen.');
+        console.error(err);
+    } finally {
+        // Resetea el input para poder subir la misma foto otra vez
+        imageInput.value = null;
     }
 };
