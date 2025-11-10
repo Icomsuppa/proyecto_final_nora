@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head><title>Verificación</title></head>
+<body>
+  <h3>Bienvenido {{ user.full_name }}</h3>
+  <p>Tu token de acceso (JWT) es:</p>
+  <textarea cols="80" rows="5">{{ token }}</textarea>
+  <br>
+  <a href="{{ url_for('index') }}">Ir al sistema</a>
+</body>
+</html>

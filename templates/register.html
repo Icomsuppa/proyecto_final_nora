@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>Registro UDG</title></head>
+<body>
+  <h2>Registro Institucional UDG</h2>
+  <form method="POST" enctype="multipart/form-data">
+    <input type="text" name="full_name" placeholder="Nombre completo" required><br>
+    <input type="email" name="email" placeholder="Correo institucional" required><br>
+    <input type="password" name="password" placeholder="Contraseña" required><br>
+    <label>Foto de perfil:</label>
+    <input type="file" name="photo" accept="image/*"><br>
+    <button type="submit">Registrarme</button>
+  </form>
+  <a href="{{ url_for('auth_udg_bp.login_view') }}">Ya tengo cuenta</a>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Login UDG</title></head>
+<body>
+  <h2>Iniciar Sesión - UDG</h2>
+
+  {% if error %}
+    <p style="color:red;">{{ error }}</p>
+  {% endif %}
+
+  <form method="POST">
+    <input type="email" name="email" placeholder="Correo institucional" required><br>
+    <input type="password" name="password" placeholder="Contraseña" required><br>
+    <button type="submit">Ingresar</button>
+  </form>
+  
+  <a href="{{ url_for('auth_udg_bp.register') }}">Registrarme</a>
+</body>
+</html>
