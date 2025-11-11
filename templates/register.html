@@ -8,7 +8,7 @@
     <input type="email" name="email" placeholder="Correo institucional" required><br>
     <input type="password" name="password" placeholder="Contraseña" required><br>
     <label>Foto de perfil:</label>
-    <input type="file" name="photo" accept="image/*"><br>
+    <input type="file" name="profile_image" accept="image/*"><br> <!-- ← cambiado a profile_image -->
     <button type="submit">Registrarme</button>
   </form>
   <a href="{{ url_for('auth_udg_bp.login_view') }}">Ya tengo cuenta</a>
