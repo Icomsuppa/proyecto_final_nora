@@ -1,0 +1,18 @@
+/* static/login.css - Opcional, si quieres variaciones */
+.login-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 100%;
+    max-width: 400px; /* Un poco más estrecho que el registro */
+}
+
+/* Puedes agregar variaciones de color si quieres */
+.submit-btn.login-btn {
+    background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+}
+
+.submit-btn.login-btn:hover {
+    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+}

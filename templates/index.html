@@ -4,12 +4,28 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat Multicast</title>
-  <link rel="stylesheet" href="../static/app.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
 </head>
 <body>
-  <div class="container">
-    <h2>Chat Multicast (LAN)</h2>
+  <!-- Topbar con perfil y botón de salir -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h3>Chat Multicast</h3>
+    </div>
+    <div class="topbar-right">
+      <div class="user-profile">
+        <img src="{{ url_for('static', filename=user.profile_image) }}" 
+             alt="Foto de perfil" 
+             class="profile-pic"
+             id="profilePicture"
+             onerror="this.src='{{ url_for('static', filename='uploads/profile_images/default.png') }}'">
+        <span class="user-name">{{ user.full_name }}</span>
+      </div>
+      <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
+    </div>
+  </div>
 
+  <div class="container">
     <div class="chat-wrapper">
       <div class="connection-section">
         <label>
@@ -19,25 +35,40 @@
         <button id="btnConnect">Conectar</button>
       </div>
 
-      <!-- (MODIFICADO) Este es el div que el nuevo app.js espera -->
+      <!-- Área de mensajes -->
       <div id="messages" class="messages-area" aria-live="polite"></div>
 
       <div id="controls">
         <input id="input" placeholder="Escribe un mensaje..." />
         <button id="send">Enviar</button>
         
-        <!-- (AGREGADO) Botón 'oculto' que se activa con el label -->
+        <!-- Botón para subir imágenes -->
         <input type="file" id="imageInput" accept="image/png, image/jpeg" style="display: none;"/>
-        <!-- (AGREGADO) Este es el botón que el usuario ve -->
         <button id="sendImageBtn">Subir Foto</button>
         
-        <button id="getTime">Pedir hora (y comparar)</button>
+        <button id="getTime">Pedir hora</button>
       </div>
     </div>
   </div>
 
-  <!-- (AGREGADO) Cargamos el nuevo script ANTES de app.js -->
-  <script src="../static/image_resizer.js"></script>
-  <script src="../static/app.js"></script>
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='image_resizer.js') }}"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+
+  <script>
+    // JavaScript para el botón de cerrar sesión
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+      if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        window.location.href = "{{ url_for('auth_udg_bp.logout') }}";
+      }
+    });
+
+    // Debug: mostrar información del usuario en consola
+    console.log("👤 Usuario en sesión:", {
+      name: "{{ user.full_name }}",
+      email: "{{ user.email }}", 
+      profileImage: "{{ user.profile_image }}"
+    });
+  </script>
 </body>
 </html>

@@ -1,0 +1,228 @@
+/* static/register.css - VERSIÓN COMPLETA */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.register-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 100%;
+    max-width: 450px;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    font-weight: 600;
+}
+
+.alert {
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    opacity: 1;
+}
+
+.alert.error {
+    background: #ffe6e6;
+    color: #d63031;
+    border: 1px solid #ff7675;
+}
+
+.alert.success {
+    background: #e6f7e6;
+    color: #00b894;
+    border: 1px solid #55efc4;
+}
+
+/* ✅ AGREGADO: Animación de loading */
+.loading {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+input, select {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 8px 0;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.file-label {
+    display: block;
+    margin: 15px 0 8px;
+    color: #555;
+    font-size: 14px;
+}
+
+#profileImage {
+    margin-top: 5px;
+    padding: 8px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#profileImage:hover {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+    position: relative;
+}
+
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ✅ AGREGADO: Estilos para el preview de imagen */
+#imagePreview {
+    max-width: 150px;
+    max-height: 150px;
+    border-radius: 8px;
+    border: 2px solid #667eea;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-top: 10px;
+}
+
+#removePreviewBtn {
+    margin-top: 5px;
+    padding: 5px 10px;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.3s ease;
+}
+
+#removePreviewBtn:hover {
+    background: #ff5252;
+}
+
+.login-link {
+    text-align: center;
+    margin-top: 25px;
+    color: #666;
+}
+
+.login-link a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.login-link a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+/* ✅ AGREGADO: Estilos para mensajes de verificación */
+.verification-message {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.verification-message.success {
+    background: #e6f7e6;
+    border: 1px solid #55efc4;
+    color: #00b894;
+}
+
+.verification-message.error {
+    background: #ffe6e6;
+    border: 1px solid #ff7675;
+    color: #d63031;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .register-container {
+        padding: 30px 20px;
+        margin: 10px;
+    }
+    
+    h2 {
+        font-size: 1.5em;
+    }
+    
+    #imagePreview {
+        max-width: 120px;
+        max-height: 120px;
+    }
+}
+
+/* ✅ AGREGADO: Efectos de transición para alertas */
+.alert.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+}

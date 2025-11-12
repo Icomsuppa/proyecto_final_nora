@@ -1,5 +1,5 @@
 # =========================================================
-# 📦 chat_bp.py — Módulo de Chat (Flask + Multicast)
+# chat_bp.py — Módulo de Chat (Flask + Multicast)
 # =========================================================
 
 # --- Importaciones ---
@@ -12,12 +12,11 @@ import queue
 import socket
 import struct
 import threading
-from flask import Blueprint, Response, request, jsonify, current_app, send_from_directory, render_template, session as flask_session, redirect, url_for
+from flask import Blueprint, Response, request, jsonify, current_app, send_from_directory, render_template, session as flask_session, redirect, url_for  # ✅ Ya tienes los imports
 from models import User
-from flask import current_app
 
 # =========================================================
-# ⚙️ Configuración general
+# Configuración general
 # =========================================================
 
 chat_bp = Blueprint('chat_bp', __name__, url_prefix='/chat')
@@ -30,7 +29,7 @@ os.makedirs(TEMP_UPLOAD_FOLDER, exist_ok=True)
 message_queue = queue.Queue()
 
 # =========================================================
-# 🌐 Funciones auxiliares (Multicast)
+# Funciones auxiliares (Multicast)
 # =========================================================
 
 def create_multicast_listener(group=None, port=None):
@@ -53,7 +52,7 @@ def multicast_sender(message, group=None, port=None):
     sock.close()
 
 # =========================================================
-# 🎧 Hilo de escucha de mensajes (Listener)
+# Hilo de escucha de mensajes (Listener)
 # =========================================================
 def listener_loop(app):
     """Escucha mensajes multicast y los agrega a la cola."""
@@ -89,7 +88,7 @@ def start_listener_thread(app):
 
 
 # =========================================================
-# 🔁 Formato de eventos SSE
+# Formato de eventos SSE
 # =========================================================
 
 def sse_format(event_id, data):
@@ -100,7 +99,7 @@ def sse_format(event_id, data):
     return msg
 
 # =========================================================
-# 📡 Rutas del Blueprint
+# Rutas del Blueprint
 # =========================================================
 
 # --- Ruta: PRINCIPAL ---
@@ -108,10 +107,14 @@ def sse_format(event_id, data):
 def chat_view():
     user_id = flask_session.get('user_id')
     if not user_id:
-        return redirect(url_for('auth_udg_bp.login'))
+        return redirect(url_for('auth_udg_bp.login_view')) 
 
     user = User.query.get(user_id)
-    return render_template('index.html', user=user)
+    if not user:
+        flask_session.clear()
+        return redirect(url_for('auth_udg_bp.login_view'))
+    
+    return render_template('index.html', user=user)  
 
 
 # --- Ruta: Stream SSE ---

@@ -5,56 +5,56 @@ from werkzeug.utils import secure_filename
 from models import db, User
 from auth.utils import allowed_file  # Debe contener {'png','jpg','jpeg'}
 
-register_bp = Blueprint('register_bp', __name__, url_prefix='/auth')
-
-# -------------------------
-# Carpeta de uploads absoluta
-# -------------------------
+# Configuración de uploads
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, '..', 'static', 'uploads', 'profile_images')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-print(f"DEBUG: Carpeta de uploads configurada en: {UPLOAD_FOLDER}")
 
-# -------------------------
-# Vista HTML
-# -------------------------
-@register_bp.route('/register', methods=['GET'])
-def register_view():
-    return render_template('register.html')
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg', 'gif'}
 
-# -------------------------
-# Registro POST
-# -------------------------
-@register_bp.route('/register', methods=['POST'])
+# ============================================================
+# 🔹 REGISTRO DE USUARIO 
+# ============================================================
+@auth_udg_bp.route('/register', methods=['POST'])
+@cross_origin()
 def register():
-    print("=== NUEVO REGISTRO ===")
+    print("🔴🔴🔴 === NUEVO REGISTRO INICIADO ===")
+    print(f"🔴 DEBUG: request.method = {request.method}")
+    print(f"🔴 DEBUG: request.content_type = {request.content_type}")
+    print(f"🔴 DEBUG: request.form keys = {list(request.form.keys())}")
+    print(f"🔴 DEBUG: request.files keys = {list(request.files.keys())}")
+    
     data = request.form
     full_name = data.get('full_name')
     email = data.get('email')
     password = data.get('password')
-    faculty_id = data.get('faculty_id')
+    faculty_id = data.get('faculty_id')  # ✅ Ahora viene del formulario
 
-    print("DEBUG: request.form:", data)
-    print("DEBUG: request.files.keys():", list(request.files.keys()))
-    
     file = request.files.get('profile_image')
     
-    # Validación de existencia de archivo
-    if not file:
-        print("⚠️ No se envió ningún archivo de imagen.")
+    # DEBUG EXTREMADAMENTE DETALLADO
+    if file and file.filename:
+        print(f"🟢 ARCHIVO ENCONTRADO:")
+        print(f"   - filename: {file.filename}")
+        print(f"   - content_type: {file.content_type}")
+        print(f"   - content_length: {file.content_length}")
+        
+        # Verificar tamaño real
+        file.seek(0, 2)  # Ir al final
+        file_size = file.tell()
+        file.seek(0)  # Volver al inicio
+        print(f"   - tamaño real: {file_size} bytes")
     else:
-        print(f"✅ Archivo recibido: {file.filename}")
-        print(f"DEBUG: content_type={file.content_type}")
-        file_bytes = file.read()
-        print(f"DEBUG: tamaño del archivo en bytes={len(file_bytes)}")
-        file.seek(0)  # Reset para guardar
+        print("🔴 NO SE ENCONTRÓ ARCHIVO profile_image")
 
     # Validaciones básicas
-    if not all([full_name, email, password]):
+    if not all([full_name, email, password, faculty_id]):
         print("❌ Faltan campos obligatorios.")
         return jsonify({'error': 'Faltan campos obligatorios.'}), 400
 
-    if not email.endswith('.udg.mx'):
+    if not is_valid_udg_email(email):
         print("❌ Correo no institucional")
         return jsonify({'error': 'Solo se permiten correos institucionales de la UDG.'}), 400
 
@@ -62,7 +62,7 @@ def register():
         print("❌ Correo ya registrado")
         return jsonify({'error': 'Este correo ya está registrado.'}), 400
 
-    # Crear usuario
+    # Crear usuario (usa faculty_id del formulario, no extraído del email)
     user = User(full_name=full_name, email=email, faculty_id=faculty_id)
     user.set_password(password)
     user.verification_token = str(uuid.uuid4())
@@ -70,21 +70,30 @@ def register():
     # -------------------------
     # Manejo de imagen de perfil
     # -------------------------
-    if file:
+    if file and file.filename and file.content_length > 0:
+        print(f"🟢 PROCESANDO IMAGEN: {file.filename}")
         if allowed_file(file.filename):
             filename = secure_filename(f"user_{uuid.uuid4()}_{file.filename}")
             save_path = os.path.join(UPLOAD_FOLDER, filename)
-            print(f"DEBUG: Ruta completa para guardar: {save_path}")
+            print(f"🟢 RUTA DE GUARDADO: {save_path}")
+            
             try:
                 file.save(save_path)
-                user.profile_image = f"uploads/profile_images/{filename}"
-                print(f"✅ Imagen guardada correctamente: {user.profile_image}")
+                # Verificar que se guardó
+                if os.path.exists(save_path):
+                    file_stats = os.stat(save_path)
+                    print(f"✅ IMAGEN GUARDADA EXITOSAMENTE: {save_path}")
+                    print(f"✅ Tamaño del archivo guardado: {file_stats.st_size} bytes")
+                    user.profile_image = f"uploads/profile_images/{filename}"
+                else:
+                    print("❌ ERROR: Archivo no se creó después de save()")
+                    user.profile_image = "uploads/profile_images/default.png"
             except Exception as e:
-                print("❌ ERROR guardando imagen:", e)
-                return jsonify({'error': 'No se pudo guardar la imagen.'}), 500
+                print(f"❌ ERROR GUARDANDO IMAGEN: {str(e)}")
+                user.profile_image = "uploads/profile_images/default.png"
         else:
             print("❌ Archivo no permitido")
-            return jsonify({'error': 'Archivo no permitido. Solo png, jpg, jpeg.'}), 400
+            user.profile_image = "uploads/profile_images/default.png"
     else:
         print("INFO: No se envió ninguna imagen, se asigna default")
         user.profile_image = "uploads/profile_images/default.png"
@@ -98,26 +107,10 @@ def register():
         print("❌ ERROR guardando usuario en DB:", e)
         return jsonify({'error': 'No se pudo guardar el usuario.'}), 500
 
-    verification_link = url_for('register_bp.verify', token=user.verification_token, _external=True)
+    verification_link = url_for('auth_udg_bp.verify', token=user.verification_token, _external=True)
     print(f"🔗 Enlace de verificación: {verification_link}")
 
     return jsonify({
         'message': 'Usuario registrado correctamente. Verifica tu correo institucional.',
         'verification_link': verification_link
     }), 201
-
-# -------------------------
-# Verificación
-# -------------------------
-@register_bp.route('/verify/<token>', methods=['GET'])
-def verify(token):
-    user = User.query.filter_by(verification_token=token).first()
-    if not user:
-        print("❌ Token inválido")
-        return jsonify({'error': 'Token de verificación inválido.'}), 404
-
-    user.is_verified = True
-    user.verification_token = None
-    db.session.commit()
-    print(f"✅ Usuario verificado: {user.email}")
-    return jsonify({'message': 'Cuenta verificada correctamente. Ya puedes iniciar sesión.'}), 200

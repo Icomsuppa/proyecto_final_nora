@@ -1,19 +1,39 @@
 <!DOCTYPE html>
 <html>
-<head><title>Login UDG</title></head>
+<head>
+    <title>Iniciar Sesión - UDG</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
+</head>
 <body>
-  <h2>Iniciar Sesión - UDG</h2>
+    <div class="register-container">
+        <h2>Iniciar Sesión</h2>
+        
+        <!-- Mostrar mensajes de error -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-  {% if error %}
-    <p style="color:red;">{{ error }}</p>
-  {% endif %}
+        {% if error %}
+            <div class="alert error">{{ error }}</div>
+        {% endif %}
 
-  <form method="POST">
-    <input type="email" name="email" placeholder="Correo institucional" required><br>
-    <input type="password" name="password" placeholder="Contraseña" required><br>
-    <button type="submit">Ingresar</button>
-  </form>
-  
-  <a href="{{ url_for('auth_udg_bp.register') }}">Registrarme</a>
+        <form method="POST" action="{{ url_for('auth_udg_bp.login') }}" id="loginForm">
+            <input type="email" name="email" placeholder="correo@alumnos.udg.mx" required>
+            
+            <input type="password" name="password" placeholder="Contraseña" required>
+            
+            <button type="submit" class="submit-btn">Iniciar Sesión</button>
+        </form>
+        
+        <p class="login-link">
+            <a href="{{ url_for('auth_udg_bp.register_view') }}">¿No tienes cuenta? Regístrate</a>
+        </p>
+    </div>
+
+    <script src="{{ url_for('static', filename='login.js') }}"></script>
 </body>
 </html>

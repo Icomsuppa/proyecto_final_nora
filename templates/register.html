@@ -1,16 +1,56 @@
 <!DOCTYPE html>
 <html>
-<head><title>Registro UDG</title></head>
+<head>
+    <title>Registro UDG</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
+</head>
 <body>
-  <h2>Registro Institucional UDG</h2>
-  <form method="POST" enctype="multipart/form-data">
-    <input type="text" name="full_name" placeholder="Nombre completo" required><br>
-    <input type="email" name="email" placeholder="Correo institucional" required><br>
-    <input type="password" name="password" placeholder="Contraseña" required><br>
-    <label>Foto de perfil:</label>
-    <input type="file" name="profile_image" accept="image/*"><br> <!-- ← cambiado a profile_image -->
-    <button type="submit">Registrarme</button>
-  </form>
-  <a href="{{ url_for('auth_udg_bp.login_view') }}">Ya tengo cuenta</a>
+    <div class="register-container">
+        <h2>Registro Institucional UDG</h2>
+        
+        <!-- Mostrar mensajes de error/success -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- ✅ CORREGIDO: usa auth_udg_bp.register (sin _view) -->
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('auth_udg_bp.register') }}" id="registerForm">
+            <input type="text" name="full_name" placeholder="Nombre completo" required>
+            
+            <input type="email" name="email" placeholder="correo@alumnos.udg.mx" required>
+            
+            <input type="password" name="password" placeholder="Contraseña" required>
+            
+            <!-- CAMPO FALTANTE: faculty_id -->
+            <select name="faculty_id" required>
+                <option value="">Selecciona tu facultad</option>
+                <option value="cucei">CUCEI</option>
+                <option value="cucs">CUCS</option>
+                <option value="cucba">CUCBA</option>
+                <option value="cucea">CUCEA</option>
+                <option value="cucsh">CUCSH</option>
+                <option value="cualtos">CUALTOS</option>
+                <option value="cucosta">CUCOSTA</option>
+            </select>
+            
+            <label class="file-label">
+                <strong>Foto de perfil (opcional):</strong>
+                <input type="file" name="profile_image" accept="image/png, image/jpeg, image/jpg" id="profileImage">
+            </label>
+            
+            <button type="submit" class="submit-btn">Registrarme</button>
+        </form>
+        
+        <p class="login-link">
+            <!-- ✅ CORREGIDO: usa auth_udg_bp.login_view -->
+            <a href="{{ url_for('auth_udg_bp.login_view') }}">¿Ya tienes cuenta? Inicia sesión</a>
+        </p>
+    </div>
+
+    <script src="{{ url_for('static', filename='register.js') }}"></script>
 </body>
 </html>

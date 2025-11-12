@@ -349,19 +349,3 @@ def refresh():
     db.session.add(sess)
     db.session.commit()
     return jsonify({'access_token': new_access, 'expires_in': int(access_expires.total_seconds())}), 200
-
-# ---- Endpoint: logout / revoke ----
-@auth_bp.route('/logout', methods=['POST'])
-@jwt_required()
-def logout():
-    j = get_jwt()
-    jti = j.get('jti')
-    identity = get_jwt_identity()
-    if not jti:
-        return jsonify({'msg': 'no jti'}), 400
-    sess = UserSession.query.filter_by(token_jti=jti, user_id=identity, active=True).first()
-    if sess:
-        sess.active = False
-        db.session.add(AuditLog(user_id=identity, action='logout', data={}))
-        db.session.commit()
-    return jsonify({'msg': 'logged_out'}), 200

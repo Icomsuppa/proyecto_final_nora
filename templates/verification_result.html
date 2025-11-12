@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verificación de Cuenta - UDG</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='verification.css') }}">
+</head>
+<body>
+    <div class="verification-container">
+        <div class="verification-card">
+            <div class="verification-icon {% if success %}success{% else %}error{% endif %}">
+                {% if success %}
+                    ✅
+                {% else %}
+                    ❌
+                {% endif %}
+            </div>
+            
+            <h2>Verificación de Cuenta</h2>
+            
+            <div class="verification-message {% if success %}success{% else %}error{% endif %}">
+                {{ message }}
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{{ url_for('auth_udg_bp.login_view') }}" class="btn btn-primary">
+                    Ir al Inicio de Sesión
+                </a>
+                <a href="{{ url_for('auth_udg_bp.register_view') }}" class="btn btn-secondary">
+                    Crear Nueva Cuenta
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

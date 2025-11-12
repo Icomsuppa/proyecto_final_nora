@@ -2,7 +2,7 @@
 import os
 
 # --- Variables globales (compatibilidad con importaciones antiguas) ---
-MULTICAST_GROUP = "224.0.0.1"
+MULTICAST_GROUP = "224.1.1.1"
 MULTICAST_PORT = 5007
 TOKEN_EXPIRATION_MINUTES = 60
 JWT_HEADER_TYPE = "Bearer"
