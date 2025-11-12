@@ -26,7 +26,9 @@ TEMP_UPLOAD_FOLDER = 'temp_uploads'
 os.makedirs(TEMP_UPLOAD_FOLDER, exist_ok=True)
 
 # Cola global de mensajes SSE
-message_queue = queue.Queue()
+_clients = set()
+_clients_lock = threading.Lock()
+#message_queue = queue.Queue()
 
 # =========================================================
 # Funciones auxiliares (Multicast)
@@ -108,7 +110,16 @@ def listener_loop(app):
                 # Convierte el diccionario de Python (ya con la IP) de nuevo a un string JSON
                 # y lo pone en la 'message_queue'.
                 # La ruta '/stream' (SSE) está sacando mensajes de esta cola.
-                message_queue.put(json.dumps(payload))
+                msg_str = (json.dumps(payload))
+
+                with _clients_lock:
+                    dead_queues = []
+                    for q in _clients:
+                        try:
+                            q.put_nowait(msg_str)
+                        except queue.Full:
+                            current_app.logger.debug("Cliente con cola llena; se descarta mensaje para ese cliente")
+
 
             except Exception as e:
                 # Captura cualquier otro error (ej. problema de red).
@@ -192,60 +203,55 @@ def chat_view():
 # Define la ruta '/stream'. Esta es la que el cliente (navegador) usará para conectarse.
 @chat_bp.route('/stream')
 def stream():
-    """Envía mensajes en tiempo real mediante Server-Sent Events."""
-    
-    # Define una función 'generadora'. Esta función no se ejecuta toda de golpe,
-    # sino que se pausa en cada 'yield' y mantiene la conexión abierta.
+    logger = current_app.logger
     def event_stream():
-        # Inicializa un contador para el ID de cada evento.
-        event_id = 0
-        
-        # Envía un mensaje inicial solo para confirmar la conexión al cliente.
-        # El formato ": <comentario>\n\n" es un comentario SSE que el cliente ignora.
-        yield ": connected\n\n"
-        
-        # Bucle infinito: mantiene la conexión abierta y escuchando mensajes.
-        while True:
-            try:
-                # Intenta obtener un mensaje de la cola ('message_queue').
-                # Esta cola (queue) debe estar definida en otro lado y es donde
-                # el 'multicast_sender' de las otras rutas pone los mensajes.
-                # .get() es bloqueante: espera hasta que haya un mensaje.
-                data = message_queue.get()
-                
-                # Incrementa el ID del evento.
-                event_id += 1
-                
-                # 'yield' envía los datos al cliente.
-                # Llama a 'sse_format' (otra función que debes tener) para
-                # formatear los datos 'data' en el estándar SSE
-                yield sse_format(event_id, data)
-                
-            except GeneratorExit:
-                # Esto ocurre si el cliente (navegador) cierra la conexión.
-                # 'break' rompe el bucle 'while True' y termina la función generadora.
-                break
-                
-            except Exception as e:
-                # Captura cualquier otro error que ocurra dentro del bucle.
-                current_app.logger.exception(f"Error SSE: {e}")
-                # Espera un momento antes de reintentar para no saturar la CPU
-                time.sleep(0.5)
+        # Crear cola exclusiva para este cliente
+        q = queue.Queue(maxsize=200)   # tamaño razonable por cliente
+        with _clients_lock:
+            _clients.add(q)
 
-    # Estos encabezados (headers) son cruciales para que SSE funcione.
+        try:
+            event_id = 0
+            # mensaje de conexión inicial
+            yield ": connected\n\n"
+
+            last_keepalive = time.time()
+            KEEPALIVE_INTERVAL = 15.0  # segundos
+
+            while True:
+                try:
+                    # Usa timeout para poder detectar cierre y enviar keepalives
+                    data = q.get(timeout=1.0)
+                    event_id += 1
+                    yield sse_format(event_id, data)
+
+                except queue.Empty:
+                    # Ningún mensaje nuevo en este segundo -> revisar keepalive
+                    now = time.time()
+                    if now - last_keepalive >= KEEPALIVE_INTERVAL:
+                        # enviar un comentario de keepalive (no incrementa event_id)
+                        yield ": keepalive\n\n"
+                        last_keepalive = now
+                    # continuar esperando
+
+        except GeneratorExit:
+            # se cierra la conexión del cliente
+            pass
+        except Exception as e:
+            logger.exception(f"Error SSE (generador): {e}")
+        finally:
+            # limpiar: quitar la cola de la lista de clientes
+            with _clients_lock:
+                try:
+                    _clients.remove(q)
+                except KeyError:
+                    pass
+
     headers = {
-        # Le dice al navegador que esto es un flujo de eventos.
         "Content-Type": "text/event-stream",
-        # Evita que el navegador o un proxy guarden en caché la respuesta.
         "Cache-Control": "no-cache",
-        # Indica que la conexión debe permanecer abierta.
-        "Connection": "keep-alive"
+        "Connection": "keep-alive",
     }
-    
-    # Crea una respuesta de Flask.
-    # Pasa la función generadora 'event_stream()' como el cuerpo de la respuesta.
-    # Flask ejecutará esta función y enviará cada 'yield' al cliente.
-    # También aplica los encabezados SSE definidos arriba.
     return Response(event_stream(), headers=headers)
 
 
