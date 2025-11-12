@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html>
 <head>
     <title>Registro UDG</title>
@@ -52,5 +53,65 @@
     </div>
 
     <script src="{{ url_for('static', filename='register.js') }}"></script>
+=======
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro - Chat UDG</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+</head>
+<body>
+  <div class="register-container">
+    <div class="register-card">
+      <div class="register-header">
+        <div class="logo-circle">UDG</div>
+        <div class="title-wrapper">
+          <h1>Registro UDG</h1>
+          <p>Crea tu cuenta institucional para acceder al chat.</p>
+        </div>
+      </div>
+
+      {% if error %}
+      <div class="alert-error">
+        {{ error }}
+      </div>
+      {% endif %}
+
+      <form method="POST" enctype="multipart/form-data" class="register-form">
+        <div class="field">
+          <label for="full_name">Nombre completo</label>
+          <input type="text" id="full_name" name="full_name" placeholder="Ej. Juan Pérez López" required>
+        </div>
+
+        <div class="field">
+          <label for="email">Correo institucional</label>
+          <input type="email" id="email" name="email" placeholder="tu.correo@alumnos.udg.mx" required>
+        </div>
+
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <input type="password" id="password" name="password" placeholder="Crea una contraseña segura" required>
+        </div>
+
+        <div class="field">
+          <label for="photo">Foto de perfil</label>
+          <!-- Ajusta "profile_image" o "photo" según cómo lo espere tu backend -->
+          <input type="file" id="photo" name="profile_image" accept="image/*">
+        </div>
+
+        <button type="submit" class="btn-primary">Registrarme</button>
+      </form>
+
+      <div class="extra-links">
+        <a href="{{ url_for('auth_udg_bp.login_view') }}">Ya tengo cuenta</a>
+      </div>
+
+      <p class="access-note">
+        Solo se permiten correos institucionales <strong>@alumnos.udg.mx</strong> o <strong>@udg.mx</strong>.
+      </p>
+    </div>
+  </div>
+>>>>>>> b9cd35df23ff0594866a40f6649b9a532af6bd43
 </body>
 </html>

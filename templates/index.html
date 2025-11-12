@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
 </head>
 <body>
+<<<<<<< HEAD
   <!-- Topbar con perfil y botón de salir -->
   <div class="topbar">
     <div class="topbar-left">
@@ -24,6 +25,19 @@
       <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
     </div>
   </div>
+=======
+<h2>Chat Multicast (LAN)</h2>
+  <div class="container">
+
+    <div class="chat-header">
+      <div class="user-info">
+        <img src="../static/user-avatar.png" class="user-avatar">
+        <span class="user-name">{{ user.full_name }}</span>
+      </div>
+      <a href="{{ url_for('auth_udg_bp.login_view') }}" class="logout-btn">Cerrar Sesión</a>
+    </div>
+
+>>>>>>> b9cd35df23ff0594866a40f6649b9a532af6bd43
 
   <div class="container">
     <div class="chat-wrapper">
@@ -35,23 +49,34 @@
         <button id="btnConnect">Conectar</button>
       </div>
 
+<<<<<<< HEAD
       <!-- Área de mensajes -->
+=======
+>>>>>>> b9cd35df23ff0594866a40f6649b9a532af6bd43
       <div id="messages" class="messages-area" aria-live="polite"></div>
 
       <div id="controls">
         <input id="input" placeholder="Escribe un mensaje..." />
         <button id="send">Enviar</button>
+<<<<<<< HEAD
         
         <!-- Botón para subir imágenes -->
         <input type="file" id="imageInput" accept="image/png, image/jpeg" style="display: none;"/>
         <button id="sendImageBtn">Subir Foto</button>
         
         <button id="getTime">Pedir hora</button>
+=======
+
+        <input type="file" id="imageInput" accept="image/png, image/jpeg" style="display: none;"/>
+        <button id="sendImageBtn">Subir Foto</button>
+        <button id="getTime">Pedir hora (y comparar)</button>
+>>>>>>> b9cd35df23ff0594866a40f6649b9a532af6bd43
       </div>
     </div>
   </div>
 
   <!-- Scripts -->
+<<<<<<< HEAD
   <script src="{{ url_for('static', filename='image_resizer.js') }}"></script>
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 
@@ -70,5 +95,9 @@
       profileImage: "{{ user.profile_image }}"
     });
   </script>
+=======
+  <script src="../static/image_resizer.js"></script>
+  <script src="../static/app.js"></script>
+>>>>>>> b9cd35df23ff0594866a40f6649b9a532af6bd43
 </body>
 </html>

@@ -15,6 +15,7 @@ from auth_udg.utils import (
     generate_jwt
 )
 
+chat_bp = Blueprint('chat_bp', __name__, url_prefix='/chat')
 auth_udg_bp = Blueprint('auth_udg_bp', __name__, url_prefix='/auth')
 
 # Configuración de uploads
@@ -127,6 +128,7 @@ def register():
     except Exception as e:
         print(f"❌ ERROR GENERAL: {e}")
         return jsonify({'error': 'Error interno del servidor.'}), 500
+
 # ============================================================
 # 🔹 VERIFICACIÓN DE CUENTA 
 # ============================================================
@@ -155,6 +157,7 @@ def verify(token):
         return render_template('verification_result.html', 
                               success=False, 
                               message="Error interno durante la verificación.")
+
 # ============================================================
 # 🔹 LOGIN
 # ============================================================
@@ -191,6 +194,11 @@ def login():
     db.session.commit()
 
     return redirect(url_for('chat_bp.chat_view'))
+
+@chat_bp.route('/chat')
+def chat_view():
+    # aquí puedes validar sesión si quieres
+    return render_template('index.html')
 
 # ============================================================
 # 🔹 LOGOUT
