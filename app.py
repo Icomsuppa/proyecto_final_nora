@@ -1,8 +1,8 @@
 # =========================================================
-# 🧩 app.py — Punto de entrada principal del microservicio Flask
+# app.py — Punto de entrada principal del microservicio Flask
 # =========================================================
 import os
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, send_from_directory
 from flask_jwt_extended import JWTManager
 from blueprints.chat_bp import chat_bp, start_listener_thread
 from blueprints.time_bp import time_bp
@@ -11,7 +11,7 @@ from models import db
 from config import Config
 
 # =========================================================
-# 🚀 Inicialización básica de la app
+# Inicialización básica de la app
 # =========================================================
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +23,7 @@ app = Flask(__name__,
              static_folder=static_dir)
 
 # =========================================================
-# ⚙️ Configuración Global
+# Configuración Global
 # =========================================================
 
 app.config.from_object(Config)
@@ -33,7 +33,7 @@ db.init_app(app)
 jwt = JWTManager(app)
 
 # =========================================================
-# 🔗 Registro de Blueprints
+# Registro de Blueprints
 # =========================================================
 
 app.register_blueprint(chat_bp)
@@ -41,7 +41,20 @@ app.register_blueprint(time_bp)
 app.register_blueprint(auth_udg_bp, url_prefix='/auth')
 
 # =========================================================
-# 🏠 Rutas principales
+# Ruta para servir imágenes de perfil
+# =========================================================
+
+@app.route('/static/uploads/profile_images/<path:filename>')
+def serve_profile_images(filename):
+    """Sirve las imágenes de perfil de los usuarios"""
+    try:
+        return send_from_directory('static/uploads/profile_images', filename)
+    except FileNotFoundError:
+        # Si la imagen no existe, servir la imagen por defecto
+        return send_from_directory('static/uploads/profile_images', 'default.png')
+
+# =========================================================
+# Rutas principales
 # =========================================================
 
 @app.route('/')
@@ -69,7 +82,7 @@ def favicon():
     return '', 204
 
 # =========================================================
-# ▶️ Ejecución directa
+# ▶Ejecución directa
 # =========================================================
 
 if __name__ == '__main__':
