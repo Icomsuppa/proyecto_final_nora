@@ -3,7 +3,7 @@ from flask import (
     Blueprint, request, jsonify, render_template, redirect, url_for, session as flask_session
 )
 from flask_cors import cross_origin
-from datetime import datetime
+from datetime import datetime, timedelta
 from models import db, User, UserSession
 
 from auth_udg.utils import (
@@ -12,6 +12,7 @@ from auth_udg.utils import (
     generate_jwt
 )
 
+chat_bp = Blueprint('chat_bp', __name__, url_prefix='/chat')
 auth_udg_bp = Blueprint('auth_udg_bp', __name__, url_prefix='/auth')
 
 
@@ -118,19 +119,25 @@ def login():
 
     return redirect(url_for('chat_bp.chat_view'))
 
+@chat_bp.route('/chat')
+def chat_view():
+    # aquí puedes validar sesión si quieres
+    return render_template('index.html')
+
 
 # ============================================================
 # 🔹 LOGOUT
 # ============================================================
 @auth_udg_bp.route('/logout', methods=['POST'])
 def logout():
-    data = request.json
-    token = data.get('token')
+    data = request.json or {}
+    token = data.get('token') or flask_session.get('jwt_token')
 
-    session = UserSession.query.filter_by(jwt_token=token).first()
-    if session:
-        db.session.delete(session)
-        db.session.commit()
-        return jsonify({'message': 'Sesión cerrada correctamente.'}), 200
+    if token:
+        session = UserSession.query.filter_by(jwt_token=token).first()
+        if session:
+            db.session.delete(session)
+            db.session.commit()
 
-    return jsonify({'error': 'Token inválido o sesión no encontrada.'}), 404
+    flask_session.clear()
+    return jsonify({'message': 'Sesión cerrada correctamente.'}), 200

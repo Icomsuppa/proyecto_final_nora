@@ -7,8 +7,17 @@
   <link rel="stylesheet" href="../static/app.css">
 </head>
 <body>
+<h2>Chat Multicast (LAN)</h2>
   <div class="container">
-    <h2>Chat Multicast (LAN)</h2>
+
+    <div class="chat-header">
+      <div class="user-info">
+        <img src="../static/user-avatar.png" class="user-avatar">
+        <span class="user-name">{{ user.full_name }}</span>
+      </div>
+      <a href="{{ url_for('auth_udg_bp.login_view') }}" class="logout-btn">Cerrar Sesión</a>
+    </div>
+
 
     <div class="chat-wrapper">
       <div class="connection-section">
@@ -19,24 +28,20 @@
         <button id="btnConnect">Conectar</button>
       </div>
 
-      <!-- (MODIFICADO) Este es el div que el nuevo app.js espera -->
       <div id="messages" class="messages-area" aria-live="polite"></div>
 
       <div id="controls">
         <input id="input" placeholder="Escribe un mensaje..." />
         <button id="send">Enviar</button>
-        
-        <!-- (AGREGADO) Botón 'oculto' que se activa con el label -->
+
         <input type="file" id="imageInput" accept="image/png, image/jpeg" style="display: none;"/>
-        <!-- (AGREGADO) Este es el botón que el usuario ve -->
         <button id="sendImageBtn">Subir Foto</button>
-        
         <button id="getTime">Pedir hora (y comparar)</button>
       </div>
     </div>
   </div>
 
-  <!-- (AGREGADO) Cargamos el nuevo script ANTES de app.js -->
+  <!-- Scripts -->
   <script src="../static/image_resizer.js"></script>
   <script src="../static/app.js"></script>
 </body>

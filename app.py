@@ -2,7 +2,7 @@
 # 🧩 app.py — Punto de entrada principal del microservicio Flask
 # =========================================================
 import os
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, session as flask_session
 from flask_jwt_extended import JWTManager
 from blueprints.chat_bp import chat_bp, start_listener_thread
 from blueprints.time_bp import time_bp
@@ -46,20 +46,19 @@ app.register_blueprint(auth_udg_bp, url_prefix='/auth')
 
 @app.route('/')
 def index():
-    """
-    Página principal:
-    - Si el usuario no tiene sesión activa → redirige al login.
-    - Si está autenticado → renderiza la interfaz principal (por ejemplo, el chat).
-    """
-    from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
-    try:
-        verify_jwt_in_request(optional=True)
-        user = get_jwt_identity()
-        if not user:
-            return redirect(url_for('auth_udg_bp.login'))
-        return render_template('index.html', user=user)
-    except Exception:
-        return redirect(url_for('auth_udg_bp.login'))
+    user_id = flask_session.get('user_id')
+
+    if not user_id:
+        # Vista GET del login
+        return redirect(url_for('auth_udg_bp.login_view'))
+
+    user = User.query.get(user_id)
+    if not user:
+        flask_session.clear()
+        return redirect(url_for('auth_udg_bp.login_view'))
+
+    # Si todo bien, muestra el chat (o tu página principal)
+    return render_template('index.html', user=user)
 
 
 
