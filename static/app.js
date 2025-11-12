@@ -5,16 +5,11 @@ let es = null;
 
 // --- Selección de Elementos del DOM ---
 
-// (MODIFICADO) El <div> donde se muestran todos los mensajes del chat.
 const messages = document.getElementById('messages');
-// ... (el resto de tus variables DOM están bien) ...
 const sendBtn = document.getElementById('send');
 const connectBtn = document.getElementById('btnConnect');
 const usernameInput = document.getElementById('username');
 const getTimeBtn = document.getElementById('getTime');
-
-// --- (AGREGADO) Nuevos elementos para imágenes ---
-// (Estos IDs deben existir en tu index.html)
 const imageInput = document.getElementById('imageInput');
 const sendImageBtn = document.getElementById('sendImageBtn');
 
@@ -22,7 +17,6 @@ const sendImageBtn = document.getElementById('sendImageBtn');
 // --- Funciones Auxiliares ---
 
 /**
- * (MODIFICADO)
  * Agrega un nodo (texto o HTML) al área de mensajes
  * y se asegura de que la vista se desplace hacia abajo.
  * @param {string|Node} content - El mensaje de texto o un elemento (ej. <img>).
@@ -57,7 +51,6 @@ connectBtn.onclick = () => {
     append('Ya estas Conectado');
 
     /**
-     * (MODIFICADO)
      * Se activa cada vez que el servidor envía un mensaje.
      * Ahora debe parsear JSON y decidir qué hacer.
      */
@@ -67,7 +60,7 @@ connectBtn.onclick = () => {
             // e.data ahora es un string JSON enviado por el servidor
             data = JSON.parse(e.data);
         } catch (err) {
-            // Si falla, es un mensaje de texto simple (como el ": connected")
+            // Si falla, es un mensaje de texto simple
             append(e.data);
             return;
         }
@@ -81,7 +74,6 @@ connectBtn.onclick = () => {
             append(`[${name}]: ${text}`);
 
         } else if (data.type === 'image') {
-            // --- (AGREGADO) ¡Mensaje de imagen! ---
             const filename = data.filename;
             const sender_ip = data.sender_ip; // La IP que el listener de Python agregó
 
@@ -90,8 +82,6 @@ connectBtn.onclick = () => {
                 return;
             }
 
-            // --- (¡¡¡AQUÍ ESTÁ EL ARREGLO!!!) ---
-            // Construimos la URL completa... ¡AGREGANDO EL PREFIJO '/chat'!
             const imageUrl = `http://${sender_ip}:5000/chat/temp_images/${filename}`;
 
             append(`[${name}] envió una imagen:`);
@@ -122,9 +112,7 @@ connectBtn.onclick = () => {
 };
 
 /**
- * (MODIFICADO)
- * Manejador del clic para el botón 'Enviar'.
- * Envía un payload JSON compatible con la nueva lógica (tipo "chat").
+ * Envía un payload JSON
  */
 sendBtn.onclick = async () => {
     const name = usernameInput.value.trim() || 'Anon';
@@ -132,8 +120,6 @@ sendBtn.onclick = async () => {
 
     if (!text) return;
 
-    // (MODIFICADO) ¡AQUÍ ESTÁ EL CAMBIO!
-    // Este es el payload que tu Python SÍ entiende.
     const payload = { 
         type: "chat", // Especificamos el tipo
         user: name,
@@ -206,10 +192,8 @@ getTimeBtn.onclick = async () => {
 };
 
 
-// --- (AGREGADO) NUEVA LÓGICA PARA SUBIR IMÁGENES ---
 
 /**
- * (AGREGADO)
  * Conecta el botón visible "Subir Foto" al input[type=file] invisible.
  */
 sendImageBtn.onclick = () => {
@@ -217,7 +201,6 @@ sendImageBtn.onclick = () => {
 };
 
 /**
- * (AGREGADO)
  * Se activa cuando el usuario selecciona un archivo de imagen.
  */
 imageInput.onchange = async (e) => {
