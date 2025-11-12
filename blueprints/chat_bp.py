@@ -1,9 +1,5 @@
 # =========================================================
-<<<<<<< HEAD
 # chat_bp.py — Módulo de Chat (Flask + Multicast)
-=======
-#  chat_bp.py — Módulo de Chat (Flask + Multicast)
->>>>>>> 46a3d7a0eeddf327009ba9cc4c7812bad49bcf6a
 # =========================================================
 
 # --- Importaciones ---
@@ -20,11 +16,7 @@ from flask import Blueprint, Response, request, jsonify, current_app, send_from_
 from models import User
 
 # =========================================================
-<<<<<<< HEAD
 # Configuración general
-=======
-#  Configuración general
->>>>>>> 46a3d7a0eeddf327009ba9cc4c7812bad49bcf6a
 # =========================================================
 
 chat_bp = Blueprint('chat_bp', __name__, url_prefix='/chat')
@@ -37,11 +29,7 @@ os.makedirs(TEMP_UPLOAD_FOLDER, exist_ok=True)
 message_queue = queue.Queue()
 
 # =========================================================
-<<<<<<< HEAD
 # Funciones auxiliares (Multicast)
-=======
-#  Funciones auxiliares (Multicast)
->>>>>>> 46a3d7a0eeddf327009ba9cc4c7812bad49bcf6a
 # =========================================================
 
 # Define la función para crear el "oído" (listener)
@@ -160,11 +148,7 @@ def start_listener_thread(app):
     t.start()
 
 # =========================================================
-<<<<<<< HEAD
 # Formato de eventos SSE
-=======
-#  Formato de eventos SSE
->>>>>>> 46a3d7a0eeddf327009ba9cc4c7812bad49bcf6a
 # =========================================================
 
 # Define una función simple para dar formato a los datos según el estándar SSE.
@@ -394,8 +378,4 @@ def serve_temp_image(filename):
     except Exception as e:
         # Captura cualquier otro error inesperado (ej. problemas de permisos).
         current_app.logger.error(f"Error interno al servir imagen: {e}")
-<<<<<<< HEAD
-=======
-        # Devuelve un error 500 (Internal Server Error).
->>>>>>> 46a3d7a0eeddf327009ba9cc4c7812bad49bcf6a
         return jsonify({'error': 'Error interno'}), 500
